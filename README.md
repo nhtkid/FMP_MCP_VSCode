@@ -2,7 +2,7 @@
 
 ## Complete Lab Guide: Create, Host, and Use an MCP Server
 
-This guide walks you through building a **Model Context Protocol (MCP) server**, hosting it on **Azure App Service**, and integrating it with **Microsoft Copilot Studio** as a tool for your AI agent.
+Build a **Model Context Protocol (MCP) server**, host it on **Azure App Service**, and integrate it with **Microsoft Copilot Studio**.
 
 ---
 
@@ -22,23 +22,23 @@ This guide walks you through building a **Model Context Protocol (MCP) server**,
 ## Overview
 
 **What You'll Build:**
-- An MCP server that wraps the Financial Modeling Prep (FMP) API
-- 8 financial data tools for stock quotes, company profiles, and financial statements
-- Cloud-hosted server on Azure for Copilot Studio integration
-- AI agent in Copilot Studio that can answer financial questions
+- MCP server wrapping the Financial Modeling Prep (FMP) API with 8 financial data tools
+- Cloud-hosted server on Azure for production use
+- AI agent in Copilot Studio that answers financial questions using your MCP server
 
 **What is MCP?**  
-Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to Large Language Models (LLMs). It enables AI assistants to securely access data and tools through a unified interface.
+Model Context Protocol standardizes how applications provide context to LLMs, enabling AI assistants to securely access data and tools.
 
 ---
 
 ## Prerequisites
 
 ### Required Tools
+- **VS Code** - [Download](https://code.visualstudio.com/)
 - **Python 3.11+** - [Download](https://www.python.org/downloads/)
 - **Node.js 18+** - [Download](https://nodejs.org/) (for MCP Inspector)
 - **Azure CLI** - [Install](https://learn.microsoft.com/cli/azure/install-azure-cli)
-- **Postman** - [Download](https://www.postman.com/downloads/) (for API testing)
+- **Postman** - [Download](https://www.postman.com/downloads/)
 - **Git** - [Download](https://git-scm.com/downloads)
 
 ### Required Accounts
@@ -50,14 +50,11 @@ Model Context Protocol (MCP) is an open protocol that standardizes how applicati
 
 ## Part 1: Build the MCP Server
 
-### Step 1: Clone or Create Project
+### Step 1: Set Up Project
 
 ```bash
-# Create project directory
-mkdir fmp-mcp-server
-cd fmp-mcp-server
-
-# Initialize git repository
+# Create and navigate to project directory
+mkdir fmp-mcp-server && cd fmp-mcp-server
 git init
 ```
 
@@ -73,138 +70,82 @@ starlette==0.41.3
 python-dotenv==1.0.0
 ```
 
-Install packages:
+Install:
 ```bash
-# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# Windows PowerShell:
-.\venv\Scripts\Activate.ps1
-# macOS/Linux:
-source venv/bin/activate
-
-# Install packages
+.\venv\Scripts\Activate.ps1  # Windows
+# source venv/bin/activate    # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### Step 3: Configure Environment Variables
+### Step 3: Configure Environment
 
-Create `.env` file:
 ```bash
-# Copy from example
 cp .env.example .env
+# Edit .env and add your FMP API key
 ```
 
-Edit `.env` and add your FMP API key:
-```
-FMP_API_KEY=your_actual_api_key_here
-```
+### Step 4: Understand the Server
 
-### Step 4: Create the MCP Server
-
-The server code (`server.py`) implements 8 financial data tools using FastMCP:
-- `search_symbol` - Search for stock ticker symbols
-- `search_name` - Search companies by name
+The `server.py` implements 8 financial tools:
+- `search_symbol`, `search_name` - Search stocks/companies
 - `get_quote` - Real-time stock quotes
-- `get_historical_prices` - Historical price and volume data
-- `get_company_profile` - Company overview and metadata
-- `get_income_statement` - Income statement data
-- `get_balance_sheet` - Balance sheet data
-- `get_cash_flow` - Cash flow statement data
+- `get_historical_prices` - Historical data
+- `get_company_profile` - Company information
+- `get_income_statement`, `get_balance_sheet`, `get_cash_flow` - Financial statements
 
-**Key Features:**
-- Uses `stateless_http=True` for cloud deployment
-- Implements proper error handling with MCP error codes
-- Provides detailed tool descriptions for AI agents
-- Supports Server-Sent Events (SSE) for streaming
+**Key features**: Stateless HTTP mode, error handling, detailed tool descriptions for AI.
 
 ---
 
 ## Part 2: Test Locally with MCP Inspector
 
-The **MCP Inspector** is a developer tool for testing MCP servers locally before deployment.
-
-### Step 1: Start Your MCP Server
-
+### Start Server
 ```bash
 python server.py
+# Server runs on http://localhost:8000/mcp/
 ```
 
-Expected output:
-```
-Starting FMP Financial Data MCP Server...
-API Key configured: Yes
-Running on http://localhost:8000
-MCP Endpoint: http://localhost:8000/mcp/
-```
-
-### Step 2: Launch MCP Inspector
-
-In a new terminal:
+### Launch MCP Inspector
 ```bash
 npx @modelcontextprotocol/inspector
+# Opens in browser at http://localhost:5173
 ```
 
-This opens the MCP Inspector UI in your browser (usually http://localhost:5173).
+### Connect and Test
+1. **Transport**: Streamable HTTP
+2. **URL**: `http://localhost:8000/mcp/`
+3. **Click Connect**
 
-### Step 3: Connect to Your Server
+Test examples:
+- `get_quote` with `{"symbol": "AAPL"}`
+- `search_name` with `{"query": "Microsoft"}`
+- `get_company_profile` with `{"symbol": "TSLA"}`
 
-In the MCP Inspector UI:
-1. **Transport Type**: Select "Streamable HTTP"
-2. **URL**: Enter `http://localhost:8000/mcp/`
-3. Click **Connect**
-
-### Step 4: Test Your Tools
-
-Once connected, you'll see all 8 tools listed. Try testing:
-
-**Test 1: Get Stock Quote**
-- Tool: `get_quote`
-- Parameters: `{"symbol": "AAPL"}`
-- Expected: Current Apple stock price and trading data
-
-**Test 2: Search Company**
-- Tool: `search_name`
-- Parameters: `{"query": "Microsoft"}`
-- Expected: List of matching companies with ticker symbols
-
-**Test 3: Get Company Profile**
-- Tool: `get_company_profile`
-- Parameters: `{"symbol": "TSLA"}`
-- Expected: Tesla company information, CEO, industry, etc.
-
-✅ **Success**: If all tools work in MCP Inspector, your server is ready for deployment!
+✅ All tools working? Ready for deployment!
 
 ---
 
 ## Part 3: Deploy to Azure App Service
 
-### Step 1: Login to Azure
-
+### Create Resources
 ```bash
 az login
-```
 
-### Step 2: Create Azure Resources
-
-```bash
 # Set variables
 $resourceGroup = "rg-fmp-mcp-server"
-$appName = "fmp-mcp-server-<unique-id>"  # Replace <unique-id> with random numbers
+$appName = "fmp-mcp-server-<unique-id>"  # Use random numbers
 $location = "eastus"
 
-# Create resource group
+# Create resource group and app service
 az group create --name $resourceGroup --location $location
 
-# Create App Service plan (Free tier)
 az appservice plan create `
   --name "$appName-plan" `
   --resource-group $resourceGroup `
   --sku B1 `
   --is-linux
 
-# Create web app
 az webapp create `
   --resource-group $resourceGroup `
   --plan "$appName-plan" `
@@ -212,54 +153,40 @@ az webapp create `
   --runtime "PYTHON:3.11"
 ```
 
-### Step 3: Configure App Settings
-
+### Configure App
 ```bash
 # Set environment variables
 az webapp config appsettings set `
   --resource-group $resourceGroup `
   --name $appName `
-  --settings FMP_API_KEY="your_actual_api_key_here" WEBSITES_PORT=8000
+  --settings FMP_API_KEY="your_api_key" WEBSITES_PORT=8000
 
-# Configure startup command
+# Set startup command
 az webapp config set `
   --resource-group $resourceGroup `
   --name $appName `
   --startup-file "uvicorn server:app --host 0.0.0.0 --port 8000"
 ```
 
-### Step 4: Deploy Your Code
-
+### Deploy
 ```bash
-# Create deployment package
 Compress-Archive -Path server.py,requirements.txt,.env -DestinationPath deploy.zip -Force
 
-# Deploy via zip
 az webapp deployment source config-zip `
   --resource-group $resourceGroup `
   --name $appName `
   --src deploy.zip
 
-# Restart the app
 az webapp restart --resource-group $resourceGroup --name $appName
 ```
 
-### Step 5: Verify Deployment
-
-```bash
-# Get the URL
-az webapp show --resource-group $resourceGroup --name $appName --query defaultHostName -o tsv
-```
-
-Your MCP endpoint will be: `https://<app-name>.azurewebsites.net/mcp/`
+Your MCP endpoint: `https://<app-name>.azurewebsites.net/mcp/`
 
 ---
 
 ## Part 4: Test Deployment with Postman
 
-### Step 1: Create a New Request in Postman
-
-**Request Setup:**
+### Setup Request
 - **Method**: POST
 - **URL**: `https://<your-app-name>.azurewebsites.net/mcp/`
 - **Headers**:
@@ -268,9 +195,7 @@ Your MCP endpoint will be: `https://<app-name>.azurewebsites.net/mcp/`
   Content-Type: application/json
   ```
 
-### Step 2: Test - List Available Tools
-
-**Body (raw JSON)**:
+### Test 1: List Tools
 ```json
 {
   "jsonrpc": "2.0",
@@ -279,27 +204,7 @@ Your MCP endpoint will be: `https://<app-name>.azurewebsites.net/mcp/`
 }
 ```
 
-**Expected Response**:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "tools": [
-      {
-        "name": "search_symbol",
-        "description": "Stock Symbol Search...",
-        "inputSchema": {...}
-      },
-      ...
-    ]
-  }
-}
-```
-
-### Step 3: Test - Call a Tool
-
-**Body (raw JSON)**:
+### Test 2: Call a Tool
 ```json
 {
   "jsonrpc": "2.0",
@@ -307,93 +212,51 @@ Your MCP endpoint will be: `https://<app-name>.azurewebsites.net/mcp/`
   "method": "tools/call",
   "params": {
     "name": "get_quote",
-    "arguments": {
-      "symbol": "AAPL"
-    }
+    "arguments": {"symbol": "AAPL"}
   }
 }
 ```
 
-**Expected Response**:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 2,
-  "result": {
-    "content": [
-      {
-        "type": "text",
-        "text": "[{\"symbol\":\"AAPL\",\"price\":175.43,...}]"
-      }
-    ]
-  }
-}
-```
+✅ Getting JSON-RPC responses? Server is working on Azure!
 
-✅ **Success**: If Postman returns proper JSON-RPC responses, your server is working correctly on Azure!
+See [POSTMAN_TESTING.md](POSTMAN_TESTING.md) for detailed examples.
 
 ---
 
 ## Part 5: Integrate with Copilot Studio
 
-### Step 1: Create a New Agent
-
+### Create Agent
 1. Go to [Copilot Studio](https://copilotstudio.microsoft.com/)
-2. Click **Create** → **New Agent**
-3. Name your agent (e.g., "FMP Financial Expert")
-4. Click **Create**
+2. **Create** → **New Agent** → Name it "FMP Financial Expert"
 
-### Step 2: Add MCP Server as a Tool
-
-1. In your agent, go to **Actions** → **Add an action**
-2. Select **Model Context Protocol server (Preview)**
-3. Fill in the form:
-
+### Add MCP Server
+1. **Actions** → **Add an action** → **Model Context Protocol server (Preview)**
+2. Fill in:
    - **Server name**: `FMP Server`
-   - **Server description**: `Financial Modeling Prep data server providing stock quotes, company profiles, income statements, balance sheets, and financial metrics for US stocks`
-   - **Server URL**: `https://<your-app-name>.azurewebsites.net/mcp/`
-   - **Authentication**: Select **None** (API key is in server environment)
+   - **Description**: `Financial data server for stock quotes, company profiles, and financial statements`
+   - **URL**: `https://<your-app-name>.azurewebsites.net/mcp/`
+   - **Authentication**: None
+3. **Create** (discovery takes 10-30 seconds)
 
-4. Click **Create**
-
-### Step 3: Wait for Discovery
-
-Copilot Studio will automatically:
-- Connect to your MCP server
-- Discover all 8 available tools
-- Register them as actions in your agent
-
-This takes 10-30 seconds.
-
-### Step 4: Test Your Agent
-
-In the Copilot Studio test pane, try these prompts:
-
+### Test Agent
+Try these prompts:
 - "What's the current stock price for Apple?"
 - "Show me Microsoft's company profile"
 - "Get Tesla's latest income statement"
-- "Search for companies with 'bank' in their name"
 
-The agent will automatically call the appropriate MCP tools and present the results!
-
-### Step 5: Publish Your Agent
-
-1. Click **Publish** in Copilot Studio
-2. Choose your deployment channels (Teams, Web, etc.)
-3. Your financial expert agent is now live!
+### Publish
+Click **Publish** and choose deployment channels (Teams, Web, etc.)
 
 ---
 
 ## 🎉 Congratulations!
 
 You've successfully:
-✅ Built a custom MCP server with 8 financial data tools  
-✅ Tested it locally with MCP Inspector  
-✅ Deployed it to Azure App Service  
-✅ Verified deployment with Postman  
-✅ Integrated it with Copilot Studio as an AI agent tool  
-
-Your agent can now answer financial questions using real-time market data!
+✅ Built an MCP server with 8 financial tools  
+✅ Tested locally with MCP Inspector  
+✅ Deployed to Azure App Service  
+✅ Verified with Postman  
+✅ Integrated with Copilot Studio  
 
 ---
 
@@ -417,29 +280,29 @@ Your agent can now answer financial questions using real-time market data!
 
 ## Troubleshooting
 
-### Server Won't Start Locally
+**Server won't start locally**
 - Check Python version: `python --version` (needs 3.11+)
-- Verify API key is set in `.env` file
-- Ensure all dependencies installed: `pip install -r requirements.txt`
+- Verify API key in `.env`
+- Reinstall: `pip install -r requirements.txt`
 
-### Azure Deployment Issues
-- Check logs: `az webapp log tail --resource-group <rg> --name <app-name>`
-- Verify startup command is correct
-- Ensure `WEBSITES_PORT` is set to 8000
+**Azure deployment fails**
+- View logs: `az webapp log tail --resource-group <rg> --name <app>`
+- Verify `WEBSITES_PORT=8000` is set
+- Check startup command is correct
 
-### Copilot Studio Connection Fails
+**Copilot Studio can't connect**
 - Test URL in Postman first
 - Ensure URL ends with `/mcp/`
-- Check Azure app is running: `az webapp show --name <app-name> --query state`
+- Verify app is running on Azure
 
-### MCP Inspector Can't Connect
-- Verify server is running on port 8000
-- Check firewall isn't blocking localhost:8000
+**MCP Inspector connection issues**
+- Confirm server runs on port 8000
+- Check firewall settings
 - Try accessing http://localhost:8000/mcp/ in browser
 
 ---
 
-**Questions or Issues?** Open an issue on GitHub or refer to the [MCP documentation](https://modelcontextprotocol.io/).
+**Questions?** Refer to the [MCP documentation](https://modelcontextprotocol.io/) or open an issue.
 
 **Happy Building! 🚀**
 
