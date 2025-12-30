@@ -1,0 +1,11 @@
+{
+  "name": "fmp-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Financial Modeling Prep API",
+  "main": "server.py",
+  "scripts": {
+    "start": "python server.py",
+    "dev": "python server.py",
+    "inspect": "npx @modelcontextprotocol/inspector python server.py"
+  }
+}
