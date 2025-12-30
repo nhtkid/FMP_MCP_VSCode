@@ -1,29 +1,27 @@
-# Testing FMP MCP Server with Postman
+# Testing the FMP MCP Server with Postman
 
-## Deployment Information
-- **Web App Name**: fmp-mcp-server-2917
-- **Resource Group**: rg-fmp-mcp-server
-- **URL**: https://fmp-mcp-server-2917.azurewebsites.net
-- **MCP Endpoint**: https://fmp-mcp-server-2917.azurewebsites.net/mcp/
+This server exposes MCP **JSON-RPC** over **streamable HTTP** at `POST /mcp/`.
 
-## Fixed Issues
-✅ Corrected startup command from `server:mcp.run_with_cors` to `server:mcp`
-✅ Configured environment variables (FMP_API_KEY, WEBSITES_PORT)
-✅ Deployed application successfully
+## What you need
 
-## Testing with Postman
+- Your deployed endpoint, e.g. `https://<your-app-name>.azurewebsites.net/mcp/`
+- Or local endpoint: `http://localhost:8000/mcp/`
 
-### 1. List Available Tools (Initialize)
+## Postman request setup
 
-**Method**: POST  
-**URL**: `https://fmp-mcp-server-2917.azurewebsites.net/mcp/`  
-**Headers**:
+- Method: `POST`
+- URL: `https://<your-app-name>.azurewebsites.net/mcp/`
+- Headers:
+
 ```
 Accept: application/json, text/event-stream
 Content-Type: application/json
 ```
 
-**Body** (raw JSON):
+## 1) List tools
+
+Body (raw JSON):
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -32,66 +30,10 @@ Content-Type: application/json
 }
 ```
 
-**Expected Response**:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "tools": [
-      {
-        "name": "search_symbol",
-        "description": "Search for stock symbols by company name or ticker",
-        "inputSchema": {...}
-      },
-      {
-        "name": "get_quote",
-        "description": "Get current stock quote and trading information",
-        "inputSchema": {...}
-      },
-      {
-        "name": "get_historical_prices",
-        "description": "Retrieve historical price data for a stock",
-        "inputSchema": {...}
-      },
-      {
-        "name": "get_company_profile",
-        "description": "Get detailed company profile and information",
-        "inputSchema": {...}
-      },
-      {
-        "name": "get_income_statement",
-        "description": "Get income statement for a company",
-        "inputSchema": {...}
-      },
-      {
-        "name": "get_balance_sheet",
-        "description": "Get balance sheet for a company",
-        "inputSchema": {...}
-      },
-      {
-        "name": "get_cash_flow",
-        "description": "Get cash flow statement for a company",
-        "inputSchema": {...}
-      }
-    ]
-  }
-}
-```
+## 2) Call a tool (examples)
 
----
+### Search for a symbol
 
-### 2. Search for a Stock Symbol
-
-**Method**: POST  
-**URL**: `https://fmp-mcp-server-2917.azurewebsites.net/mcp/`  
-**Headers**:
-```
-Accept: application/json, text/event-stream
-Content-Type: application/json
-```
-
-**Body** (raw JSON):
 ```json
 {
   "jsonrpc": "2.0",
@@ -106,35 +48,8 @@ Content-Type: application/json
 }
 ```
 
-**Expected Response**:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 2,
-  "result": {
-    "content": [
-      {
-        "type": "text",
-        "text": "[{\"symbol\": \"AAPL\", \"name\": \"Apple Inc.\", \"currency\": \"USD\", \"stockExchange\": \"NASDAQ\", \"exchangeShortName\": \"NASDAQ\"}, ...]"
-      }
-    ]
-  }
-}
-```
+### Get a quote
 
----
-
-### 3. Get Stock Quote
-
-**Method**: POST  
-**URL**: `https://fmp-mcp-server-2917.azurewebsites.net/mcp/`  
-**Headers**:
-```
-Accept: application/json, text/event-stream
-Content-Type: application/json
-```
-
-**Body** (raw JSON):
 ```json
 {
   "jsonrpc": "2.0",
@@ -149,35 +64,10 @@ Content-Type: application/json
 }
 ```
 
-**Expected Response**:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 3,
-  "result": {
-    "content": [
-      {
-        "type": "text",
-        "text": "[{\"symbol\": \"AAPL\", \"name\": \"Apple Inc.\", \"price\": 189.50, \"changesPercentage\": 1.23, \"change\": 2.31, \"dayLow\": 187.00, \"dayHigh\": 190.25, \"yearHigh\": 199.62, \"yearLow\": 164.08, \"marketCap\": 2950000000000, \"volume\": 52000000, \"avgVolume\": 55000000, \"open\": 188.00, \"previousClose\": 187.19, ...}]"
-      }
-    ]
-  }
-}
-```
+### Get historical prices
 
----
+Note: in this repo, `get_historical_prices` currently accepts **only** `symbol` and returns full end-of-day history from FMP.
 
-### 4. Get Historical Prices
-
-**Method**: POST  
-**URL**: `https://fmp-mcp-server-2917.azurewebsites.net/mcp/`  
-**Headers**:
-```
-Accept: application/json, text/event-stream
-Content-Type: application/json
-```
-
-**Body** (raw JSON):
 ```json
 {
   "jsonrpc": "2.0",
@@ -186,39 +76,39 @@ Content-Type: application/json
   "params": {
     "name": "get_historical_prices",
     "arguments": {
-      "symbol": "AAPL",
-      "from": "2024-01-01",
-      "to": "2024-12-28"
+      "symbol": "AAPL"
     }
   }
 }
 ```
 
----
+### Financial statements (annual)
 
-### 5. Get Company Profile
-
-**Method**: POST  
-**URL**: `https://fmp-mcp-server-2917.azurewebsites.net/mcp/`  
-**Headers**:
-```
-Accept: application/json, text/event-stream
-Content-Type: application/json
-```
-
-**Body** (raw JSON):
 ```json
 {
   "jsonrpc": "2.0",
   "id": 5,
   "method": "tools/call",
   "params": {
-    "name": "get_company_profile",
+    "name": "get_income_statement",
     "arguments": {
-      "symbol": "AAPL"
+      "symbol": "AAPL",
+      "period": "annual",
+      "limit": 5
     }
   }
 }
+```
+
+## Expected response shape
+
+- Success responses return a `result.content` array.
+- Each content entry is typically `{ "type": "text", "text": "..." }` containing JSON returned from FMP.
+
+## Common issues
+
+- `tools/list` works but tool calls fail: verify `FMP_API_KEY` is set on the server and the key has remaining quota.
+- 5xx from Azure: check App Service logs and confirm the startup command is `python -m uvicorn server:app --host 0.0.0.0 --port 8000`.
 ```
 
 ---
