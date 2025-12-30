@@ -1,55 +1,6 @@
-# Building an MCP Server for Copilot Studio
-
-## Complete Lab Guide: Create, Host, and Use an MCP Server
-
-Build a **Model Context Protocol (MCP) server**, host it on **Azure App Service**, and integrate it with **Microsoft Copilot Studio**.
-
----
-
-## 📋 Table of Contents
-
-1. [Overview](#overview)
-2. [Prerequisites](#prerequisites)
-3. [Part 1: Build the MCP Server](#part-1-build-the-mcp-server)
-4. [Part 2: Test Locally with MCP Inspector](#part-2-test-locally-with-mcp-inspector)
-5. [Part 3: Deploy to Azure App Service](#part-3-deploy-to-azure-app-service)
-6. [Part 4: Test Deployment with Postman](#part-4-test-deployment-with-postman)
-7. [Part 5: Integrate with Copilot Studio](#part-5-integrate-with-copilot-studio)
-8. [References](#references)
-
----
-
-## Overview
-
-**What You'll Build:**
-- MCP server wrapping the Financial Modeling Prep (FMP) API with 8 financial data tools
-- Cloud-hosted server on Azure for production use
-- AI agent in Copilot Studio that answers financial questions using your MCP server
-
-**What is MCP?**  
-Model Context Protocol standardizes how applications provide context to LLMs, enabling AI assistants to securely access data and tools.
-
----
-
-## Prerequisites
-
-### Required Tools
-- **VS Code** - [Download](https://code.visualstudio.com/)
-- **Python 3.11+** - [Download](https://www.python.org/downloads/)
-- **Node.js 18+** - [Download](https://nodejs.org/) (for MCP Inspector)
-- **Azure CLI** - [Install](https://learn.microsoft.com/cli/azure/install-azure-cli)
-- **Postman** - [Download](https://www.postman.com/downloads/)
-- **Git** - [Download](https://git-scm.com/downloads)
-
-### Required Accounts
-- **FMP API Key** - Free tier available at [financialmodelingprep.com](https://site.financialmodelingprep.com/developer/docs)
-- **Azure Subscription** - [Free account](https://azure.microsoft.com/free/)
-- **Microsoft Copilot Studio** - [Access here](https://copilotstudio.microsoft.com/)
-
----
-
-## Part 1: Build the MCP Server
+#+#+#+#+######################################################################
 # FMP MCP Server (Copilot Studio)
+#+#+#+#+######################################################################
 
 An HTTP **Model Context Protocol (MCP)** server that exposes Financial Modeling Prep (FMP) market-data endpoints as MCP tools so **Microsoft Copilot Studio** can discover and call them.
 
@@ -215,4 +166,4 @@ More examples: see `POSTMAN_TESTING.md`.
 - MCP: https://modelcontextprotocol.io/
 - Copilot Studio MCP: https://learn.microsoft.com/en-us/microsoft-copilot-studio/agent-extend-action-mcp
 - FMP docs: https://site.financialmodelingprep.com/developer/docs
-  ```
+
