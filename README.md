@@ -405,8 +405,11 @@ Your agent can now answer financial questions using real-time market data!
 - [Azure MCP Sample with Auth](https://github.com/Azure-Samples/remote-mcp-webapp-python-auth) - Azure deployment reference
 - [Copilot Studio MCP Integration](https://learn.microsoft.com/en-us/microsoft-copilot-studio/agent-extend-action-mcp) - Adding MCP servers to agents
 
+### APIs & Data Sources
+- [Financial Modeling Prep (FMP)](https://financialmodelingprep.com/) - Real-time stock market data API
+- [FMP API Documentation](https://site.financialmodelingprep.com/developer/docs) - Complete API reference and endpoints
+
 ### Additional Resources
-- [Financial Modeling Prep API Docs](https://site.financialmodelingprep.com/developer/docs) - FMP API reference
 - [Azure App Service Documentation](https://learn.microsoft.com/azure/app-service/) - Azure hosting guide
 - [FastMCP Framework](https://github.com/jlowin/fastmcp) - Python MCP framework
 
